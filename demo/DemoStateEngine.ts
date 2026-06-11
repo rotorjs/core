@@ -36,7 +36,7 @@ export class DemoStateReducer extends StateReducer<
 
     this.clearInterests();
 
-    this.engine.dispatchAction('demo action');
+    this.target.dispatchAction('demo action');
 
     this.addInterest('demo interest');
 
@@ -61,7 +61,7 @@ export class DemoStateEngine extends StateEngine<
         console.log('got demo action');
 
         setTimeout(() => {
-          this.dispatchInterest('demo interest');
+          this.target.dispatchInterest('demo interest');
         }, 5000);
         return;
     }
