@@ -5,18 +5,21 @@ export abstract class StateEngine<
   StateDescriptor,
   State,
   Action,
-> extends StateEventTarget<StateDescriptor, State, Action> {
+  Target extends StateEventTarget<StateDescriptor, State, Action> =
+    StateEventTarget<StateDescriptor, State, Action>,
+> {
+  #target;
   #reducers: {
     [id: string]: StateReducer<StateDescriptor, State, Action>;
   } = {};
   #controller = new AbortController();
 
-  constructor() {
-    super();
+  constructor(target: Target) {
+    this.#target = target;
 
     const signal = this.signal;
 
-    this.addEventListener(
+    this.target.addEventListener(
       'action',
       (event) => {
         this.onAction(event.action);
@@ -24,7 +27,7 @@ export abstract class StateEngine<
       { signal },
     );
 
-    this.addEventListener(
+    this.target.addEventListener(
       'subscribe-state',
       (event) => {
         const id = this.getReducerID(event.descriptor);
@@ -39,7 +42,7 @@ export abstract class StateEngine<
       { signal },
     );
 
-    this.addEventListener(
+    this.target.addEventListener(
       'unsubscribe-state',
       (event) => {
         const id = this.getReducerID(event.descriptor);
@@ -62,6 +65,10 @@ export abstract class StateEngine<
       },
       { signal },
     );
+  }
+
+  get target(): Target {
+    return this.#target;
   }
 
   get signal(): AbortSignal {

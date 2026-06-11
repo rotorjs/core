@@ -1,13 +1,19 @@
-import { attachWorker } from '../lib/main';
-import { ExtendedDemoStateEngine } from './DemoStateEngine';
+import { wrapWorker, type StateEventTarget } from '../lib/main';
+import {
+  ExtendedDemoStateEngine,
+  type DemoAction,
+  type DemoState,
+  type DemoStateDescriptor,
+} from './DemoStateEngine';
 
 const controller = new AbortController();
 const signal = controller.signal;
 
-const engine = new ExtendedDemoStateEngine();
-attachWorker(engine, self, { signal });
+const target: StateEventTarget<DemoStateDescriptor, DemoState, DemoAction> =
+  wrapWorker(self, { signal });
+const engine = new ExtendedDemoStateEngine(target);
 
-engine.addEventListener('action', (event) => {
+target.addEventListener('action', (event) => {
   console.log('worker: action', event.action, event.emitter);
 
   if (event.action === 'stop') {
@@ -16,11 +22,11 @@ engine.addEventListener('action', (event) => {
   }
 });
 
-engine.addEventListener('interest', (event) => {
+target.addEventListener('interest', (event) => {
   console.log('worker: interest', event.interest, event.emitter);
 });
 
-engine.addEventListener('subscribe-state', (event) => {
+target.addEventListener('subscribe-state', (event) => {
   console.log(
     'worker: subscribe state',
     event.consumer,
@@ -29,7 +35,7 @@ engine.addEventListener('subscribe-state', (event) => {
   );
 });
 
-engine.addEventListener('unsubscribe-state', (event) => {
+target.addEventListener('unsubscribe-state', (event) => {
   console.log(
     'worker: unsubscribe state',
     event.consumer,
@@ -38,6 +44,6 @@ engine.addEventListener('unsubscribe-state', (event) => {
   );
 });
 
-engine.addEventListener('state', (event) => {
+target.addEventListener('state', (event) => {
   console.log('worker: state', event.consumers, event.state, event.emitter);
 });

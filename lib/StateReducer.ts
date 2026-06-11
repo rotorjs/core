@@ -30,7 +30,7 @@ export abstract class StateReducer<
 
     const signal = this.signal;
 
-    this.engine.addEventListener(
+    this.target.addEventListener(
       'interest',
       (event) => {
         if (this.hasInterest(event.interest)) this.update();
@@ -41,6 +41,10 @@ export abstract class StateReducer<
 
   get engine(): Engine {
     return this.#engine;
+  }
+
+  get target(): Engine['target'] {
+    return this.engine.target;
   }
 
   get id(): string {
@@ -65,7 +69,7 @@ export abstract class StateReducer<
     if (!this.signal.aborted && this.#hasState)
       setTimeout(() => {
         if (this.hasConsumer(consumer))
-          this.engine.dispatchState([consumer], this.#state!);
+          this.target.dispatchState([consumer], this.#state!);
       });
   }
 
@@ -133,7 +137,7 @@ export abstract class StateReducer<
           nextState = this.recover(this.#state, error);
         }
 
-        this.engine.dispatchInterest(stateReducerCleanupInterest(this.id));
+        this.target.dispatchInterest(stateReducerCleanupInterest(this.id));
 
         if (
           this.signal.aborted ||
@@ -161,8 +165,8 @@ export abstract class StateReducer<
 
   protected onState(state: State): void {
     setTimeout(() => {
-      this.engine.dispatchState(this.getConsumers(), state);
-      this.engine.dispatchInterest(stateInterest(this.id));
+      this.target.dispatchState(this.getConsumers(), state);
+      this.target.dispatchInterest(stateInterest(this.id));
     });
   }
 

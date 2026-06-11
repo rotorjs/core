@@ -6,10 +6,10 @@ export class StateConsumer<
   StateDescriptor,
   State,
   Action,
-  Engine extends StateEventTarget<StateDescriptor, State, Action> =
+  Target extends StateEventTarget<StateDescriptor, State, Action> =
     StateEventTarget<StateDescriptor, State, Action>,
 > {
-  #engine;
+  #target;
   #id = uuid();
   #descriptor;
   #callback;
@@ -18,17 +18,17 @@ export class StateConsumer<
   #controller = new AbortController();
 
   constructor(
-    engine: Engine,
+    target: Target,
     descriptor: StateDescriptor,
     callback: StateCallback<State>,
   ) {
-    this.#engine = engine;
+    this.#target = target;
     this.#descriptor = descriptor;
     this.#callback = callback;
 
     const signal = this.signal;
 
-    this.engine.addEventListener(
+    this.target.addEventListener(
       'state',
       (event) => {
         if (
@@ -44,15 +44,15 @@ export class StateConsumer<
       { signal },
     );
 
-    this.engine.subscribeState(this.id, this.descriptor);
+    this.target.subscribeState(this.id, this.descriptor);
 
     signal.addEventListener('abort', () => {
-      this.engine.unsubscribeState(this.id, this.descriptor);
+      this.target.unsubscribeState(this.id, this.descriptor);
     });
   }
 
-  get engine(): Engine {
-    return this.#engine;
+  get target(): Target {
+    return this.#target;
   }
 
   get id(): string {
