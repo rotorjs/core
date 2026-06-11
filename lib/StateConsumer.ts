@@ -45,6 +45,10 @@ export class StateConsumer<
     );
 
     this.engine.subscribeState(this.id, this.descriptor);
+
+    signal.addEventListener('abort', () => {
+      this.engine.unsubscribeState(this.id, this.descriptor);
+    });
   }
 
   get engine(): Engine {
@@ -77,7 +81,5 @@ export class StateConsumer<
 
   stop(): void {
     this.#controller.abort();
-
-    this.engine.unsubscribeState(this.id, this.descriptor);
   }
 }
